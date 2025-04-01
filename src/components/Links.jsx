@@ -16,6 +16,26 @@ export const Links = () => {
   const { t, i18n } = useTranslation();
   const categoriesWithTeams = ["Productivity", "Planing", "Handover", "IT-MATERIAL"];
   const categoriesSingleLink = ["Shifting", "Permplan", "Permsheet", "Permsupport", "Verladeplan", "ECOM-Traceability", "Sperrgut-Pilotage", "Skydec", "Tattoo", "Sorting-Dashboard", "Material-Sheet", "Transportplan", "Outbound-Page", "Loading-Overview"];
+  const securityTestLink = [
+    "Management DE (Safety Test)",
+    "Management EN (Safety Test)",
+    "Picking DE (Safety Test)",
+    "Picking EN (Safety Test)",
+    "Inbound DE (Safety Test)",
+    "Inbound EN (Safety Test)",
+    "Outbound DE (Safety Test)",
+    "Outbound EN (Safety Test)",
+    "Sorting DE (Safety Test)",
+    "Sorting EN (Safety Test)",
+    "Sperrgut DE (Safety Test)",
+    "Sperrgut EN (Safety Test)",
+    "Rezeption DE (Safety Test)",
+    "Rezeption EN (Safety Test)",
+    "E-COM DE (Safety Test)",
+    "ECOM EN (Safety Test)",
+    "Safety Test DE (Safety Test)",
+    "Safety Test EN (Safety Test)"
+  ];
   const teams = ["Inbound", "Outbound", "Sorting", "U3", "U4", "U5", "U6", "U7", "Sperrgut", "ECOM", "Rezeption", "Lagerleitung"];
   // const [theme, setTheme] = useState('Decathlon Light'); // Standard-Theme
   const { theme } = useContext(SettingsContext); // Theme aus dem Kontext holen
@@ -44,6 +64,15 @@ export const Links = () => {
         });
       }
 
+      // Sicherheitstest-Links
+      for (const category of securityTestLink) {
+        const docRef = doc(db, "links", category);
+        const snapshot = await getDocs(collection(db, "links", category, "securityTestLink"));
+        snapshot.forEach((doc) => {
+          linksData[category] = doc.data().link;
+        });
+      }
+
       setData(linksData);
     };
     fetchData();
@@ -63,6 +92,16 @@ export const Links = () => {
 
   const handleUpdateSingleLink = async (category, newLink) => {
     const docRef = doc(db, "links", category, "singleLink", "linkDoc");
+    await setDoc(docRef, { link: newLink });
+    setData((prevData) => ({
+      ...prevData,
+      [category]: newLink,
+    }));
+  };
+
+
+  const handleUpdateSecurityLink = async (category, newLink) => {
+    const docRef = doc(db, "links", category, "securityTestLink", "linkDoc");
     await setDoc(docRef, { link: newLink });
     setData((prevData) => ({
       ...prevData,
@@ -122,6 +161,17 @@ export const Links = () => {
               type="text"
               value={data[category] || ""}
               onChange={(e) => handleUpdateSingleLink(category, e.target.value)}
+              style={theme === 'Dark Mode' ? { backgroundColor:'#000000', color: '#FFFFFF', border: 'none' } : {}}
+            />
+          </div>
+        ))}
+        {securityTestLink.map((category) => (
+          <div key={category} className="category" style={theme === 'Dark Mode' ? { backgroundColor:'#1E1E2F', border: 'none' } : {}}>
+            <h3 style={theme === 'Dark Mode' ? { color: '#FFFFFF' } : {}}>{category}</h3>
+            <input
+              type="text"
+              value={data[category] || ""}
+              onChange={(e) => handleUpdateSecurityLink(category, e.target.value)}
               style={theme === 'Dark Mode' ? { backgroundColor:'#000000', color: '#FFFFFF', border: 'none' } : {}}
             />
           </div>

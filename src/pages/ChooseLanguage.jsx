@@ -21,58 +21,131 @@ export const ChooseLanguage = () => {
     const [isLoading, setIsLoading] = useState(true);
     // const [theme, setTheme] = useState('Decathlon Light'); // Standard-Theme
     const { theme } = useContext(SettingsContext); // Theme aus dem Kontext holen
+    const [managementLinkDE, setManagementLinkDE] = useState('');
+const [pickingLinkDE, setPickingLinkDE] = useState('');
+const [outboundLinkDE, setOutboundLinkDE] = useState('');
+const [rezeptionLinkDE, setRezeptionLinkDE] = useState('');
+const [inboundLinkDE, setInboundLinkDE] = useState('');
+const [sperrgutLinkDE, setSperrgutLinkDE] = useState('');
+const [ecomLinkDE, setEcomLinkDE] = useState('');
+const [sortingLinkDE, setSortingLinkDE] = useState('');
+const [safetyTestLinkDE, setSafetyTestLinkDE] = useState('');
+const [managementLinkEN, setManagementLinkEN] = useState('');
+const [pickingLinkEN, setPickingLinkEN] = useState('');
+const [outboundLinkEN, setOutboundLinkEN] = useState('');
+const [rezeptionLinkEN, setRezeptionLinkEN] = useState('');
+const [inboundLinkEN, setInboundLinkEN] = useState('');
+const [sperrgutLinkEN, setSperrgutLinkEN] = useState('');
+const [ecomLinkEN, setEcomLinkEN] = useState('');
+const [sortingLinkEN, setSortingLinkEN] = useState('');
+const [safetyTestLinkEN, setSafetyTestLinkEN] = useState('');
+const [areLinksLoaded, setAreLinksLoaded] = useState(false);
+
+
+
+const fetchSafetyLink = async (collectionName) => {
+  const docRef = doc(db, 'links', collectionName, 'securityTestLink', 'linkDoc');
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return docSnap.data().link;
+  } else {
+    console.warn(`Kein Link gefunden für: ${collectionName}`);
+    return "#";
+  }
+};
+
+useEffect(() => {
+  const loadAllSafetyTestLinks = async () => {
+    const linkMap = [
+      { name: 'Management DE (Safety Test)', setter: setManagementLinkDE },
+      { name: 'Picking DE (Safety Test)', setter: setPickingLinkDE },
+      { name: 'Outbound DE (Safety Test)', setter: setOutboundLinkDE },
+      { name: 'Rezeption DE (Safety Test)', setter: setRezeptionLinkDE },
+      { name: 'Inbound DE (Safety Test)', setter: setInboundLinkDE },
+      { name: 'Sperrgut DE (Safety Test)', setter: setSperrgutLinkDE },
+      { name: 'E-COM DE (Safety Test)', setter: setEcomLinkDE },
+      { name: 'Sorting DE (Safety Test)', setter: setSortingLinkDE },
+      { name: 'Safety Test DE (Safety Test)', setter: setSafetyTestLinkDE },
+
+      { name: 'Management EN (Safety Test)', setter: setManagementLinkEN },
+      { name: 'Picking EN (Safety Test)', setter: setPickingLinkEN },
+      { name: 'Outbound EN (Safety Test)', setter: setOutboundLinkEN },
+      { name: 'Rezeption EN (Safety Test)', setter: setRezeptionLinkEN },
+      { name: 'Inbound EN (Safety Test)', setter: setInboundLinkEN },
+      { name: 'Sperrgut EN (Safety Test)', setter: setSperrgutLinkEN },
+      { name: 'ECOM EN (Safety Test)', setter: setEcomLinkEN },
+      { name: 'Sorting EN (Safety Test)', setter: setSortingLinkEN },
+      { name: 'Safety Test EN (Safety Test)', setter: setSafetyTestLinkEN },
+    ];
+
+    await Promise.all(
+      linkMap.map(async ({ name, setter }) => {
+        const link = await fetchSafetyLink(name);
+        setter(link);
+      })
+    );
+    setAreLinksLoaded(true); 
+  };
+
+  loadAllSafetyTestLinks();
+}, []);
 
 
 
 
+useEffect(() => {
+  if (!areLinksLoaded) return;
 
+  const fetchUserDetails = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
 
-    useEffect(() => {
-        const fetchUserDetails = async () => {
-          const user = auth.currentUser; // Den aktuell angemeldeten Benutzer holen
-          if (user) {
-            const docRef = doc(db, "users", user.uid); // Referenz auf den User-Datensatz
-            const docSnap = await getDoc(docRef);
-    
-            if (docSnap.exists()) {
-              const userData = docSnap.data(); // Daten aus dem Dokument extrahieren
-              const userLanguage = userData.language || 'de'; // Standardsprache ist 'de'
-              i18n.changeLanguage(userLanguage); // Setze die Sprache in i18next
-              setTeam(userData.team); // Team setzen
-              setRole(userData.role);
-              // setTheme(userData.theme || 'Decathlon Light');
-    
-              // Dynamischen Link für Deutsch setzen
-              if (userData.role === "Management" || userData.role === "Teamleiter") {
-                setGermanLink("https://forms.gle/mtHXLeXt5YEFdfBX9");
-                setEnglishLink("https://forms.gle/k7FHYixmJ9benRm86");
-              } else if (userData.team === "Rezeption") {
-                setGermanLink("https://forms.gle/TsG6UTAPZtfwGqRj7");
-                setEnglishLink("https://forms.gle/EDR4HD29ZBjaaJpW6");
-              } else if (userData.team === "Outbound" || userData.team === "Inbound" || userData.team === "Sorting") {
-                setGermanLink("https://forms.gle/NxjW9BmjHhoeQYZE8");
-                setEnglishLink("https://forms.gle/tHRLyyFvs27iVxhx9");
-              } else if (userData.team === "Sperrgut") {
-                setGermanLink("https://forms.gle/ePM7XwHtVBsGXC4UA");
-                setEnglishLink("https://forms.gle/gpiicUNRGny96qxD8");
-              } else if (userData.team === "ECOM") {
-                setGermanLink("https://forms.gle/t8z4ocJ1v9AfsVSq5");
-                setEnglishLink("https://forms.gle/J9LYmCB6fVp8jnHVA");
-              } else if (["U3", "U4", "U5", "U6", "U7"].includes(userData.team)) {
-                setGermanLink("https://forms.gle/BAhA9kHm1RdifQFM8");
-                setEnglishLink("https://forms.gle/Sumz2rKWTSXVfq3x8");
-              } else {
-                setGermanLink("#"); // Standardlink, falls keine Bedingung zutrifft
-                setEnglishLink("#");
-              }
-            } else {
-              console.log("No such document!");
-            }
-          }
-        };
-    
-        fetchUserDetails(); // Benutzerinformationen abrufen
-      }, []);
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const userLanguage = userData.language || 'de';
+        i18n.changeLanguage(userLanguage);
+        setTeam(userData.team);
+        setRole(userData.role);
+
+        if (userData.role === "Management" || userData.role === "Teamleiter" || userData.team === "Lagerleitung") {
+          setGermanLink(managementLinkDE);
+          setEnglishLink(managementLinkEN);
+        } else if (userData.team === "Rezeption") {
+          setGermanLink(rezeptionLinkDE);
+          setEnglishLink(rezeptionLinkEN);
+        } else if (userData.team === "Outbound") {
+          setGermanLink(outboundLinkDE);
+          setEnglishLink(outboundLinkEN);
+        } else if (userData.team === "Inbound") {
+          setGermanLink(inboundLinkDE);
+          setEnglishLink(inboundLinkEN);
+        } else if (userData.team === "Sorting") {
+          setGermanLink(sortingLinkDE);
+          setEnglishLink(sortingLinkEN);
+        } else if (userData.team === "Sperrgut") {
+          setGermanLink(sperrgutLinkDE);
+          setEnglishLink(sperrgutLinkEN);
+        } else if (userData.team === "ECOM") {
+          setGermanLink(ecomLinkDE);
+          setEnglishLink(ecomLinkEN);
+        } else if (["U3", "U4", "U5", "U6", "U7"].includes(userData.team)) {
+          setGermanLink(pickingLinkDE);
+          setEnglishLink(pickingLinkEN);
+        } else {
+          setGermanLink("#");
+          setEnglishLink("#");
+        }
+      } else {
+        console.log("No such document!");
+      }
+    }
+  };
+
+  fetchUserDetails();
+}, [areLinksLoaded]); // Nur starten, wenn Links geladen
+
 
       useEffect(() => {
         const loadSettingsData = async () => {
